@@ -33,28 +33,53 @@ const ParameterInput: React.FC<ParameterInputProps> = ({ label, unit, value, min
 
 interface TemperatureSliderProps {
   value: number;
+  unit: 'C' | 'F';
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled: boolean;
+  onUnitToggle: () => void;
 }
 
-const TemperatureSlider: React.FC<TemperatureSliderProps> = ({ value, onChange, disabled }) => (
-  <div className="flex flex-col">
-    <label className="mb-2 text-sm font-medium text-gray-400">Temperature</label>
-    <div className="flex items-center space-x-4">
-      <input
-        type="range"
-        min="2"
-        max="38"
-        step="1"
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-      />
-      <span className="font-mono text-lg w-16 text-center">{value}°C</span>
+const TemperatureSlider: React.FC<TemperatureSliderProps> = ({ value, unit, onChange, disabled, onUnitToggle }) => {
+  const min = unit === 'C' ? 2 : Math.round((2 * 9/5) + 32); // 36°F
+  const max = unit === 'C' ? 38 : Math.round((38 * 9/5) + 32); // 100°F
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-sm font-medium text-gray-400">Temperature</label>
+        <div className="flex items-center p-1 bg-gray-900 rounded-full border border-gray-700">
+          <button
+            onClick={unit === 'F' ? onUnitToggle : undefined}
+            disabled={disabled}
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${unit === 'C' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700'}`}
+          >
+            °C
+          </button>
+          <button
+            onClick={unit === 'C' ? onUnitToggle : undefined}
+            disabled={disabled}
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${unit === 'F' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700'}`}
+          >
+            °F
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center space-x-4">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step="1"
+          value={Math.round(value)}
+          onChange={onChange}
+          disabled={disabled}
+          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+        <span className="font-mono text-lg w-20 text-center">{Math.round(value)}°{unit}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface DoublingTimeInputProps {
   totalMinutes: number;
@@ -150,13 +175,16 @@ interface ParameterControlsProps {
   onFlourAmountChange: (amount: number) => void;
   doughBallWeightGrams: number;
   onDoughBallWeightChange: (weight: number) => void;
+  tempUnit: 'C' | 'F';
+  onTempUnitToggle: () => void;
 }
 
 export const ParameterControls: React.FC<ParameterControlsProps> = ({ 
   params, onParamChange, isRunning, isCollapsed, onToggleRun, onReset, 
   doublingTime, onDoublingTimeChange, simulationSpeed, onSpeedChange, 
   isMinSpeed, isMaxSpeed, flourAmountKg, onFlourAmountChange,
-  doughBallWeightGrams, onDoughBallWeightChange
+  doughBallWeightGrams, onDoughBallWeightChange,
+  tempUnit, onTempUnitToggle
 }) => {
   const [flourInputValue, setFlourInputValue] = useState(flourAmountKg.toString());
   const [ballWeightInputValue, setBallWeightInputValue] = useState(doughBallWeightGrams.toString());
@@ -171,6 +199,12 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
 
   const handleInputChange = (param: keyof SimulationParams) => (e: React.ChangeEvent<HTMLInputElement>) => {
     onParamChange(param, parseFloat(e.target.value));
+  };
+
+  const handleTempChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    const newTempInC = tempUnit === 'F' ? (value - 32) * 5 / 9 : value;
+    onParamChange('temperature', newTempInC);
   };
 
   const handleFlourInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -221,6 +255,7 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
   const totalDoughWeight = flourGrams + waterGrams + saltGrams + idyGrams;
   const doughBallYield = doughBallWeightGrams > 0 ? (totalDoughWeight / doughBallWeightGrams).toFixed(1) : '0.0';
 
+  const displayTemp = tempUnit === 'F' ? (params.temperature * 9 / 5) + 32 : params.temperature;
 
   return (
     <div className="p-6 bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg space-y-6 backdrop-blur-sm">
@@ -232,7 +267,13 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
         <ParameterInput label="Hydration" unit="%" value={params.hydration} min={50} max={100} step={1} onChange={handleInputChange('hydration')} disabled={isRunning} />
       </div>
       
-      <TemperatureSlider value={params.temperature} onChange={handleInputChange('temperature')} disabled={isRunning} />
+      <TemperatureSlider 
+        value={displayTemp}
+        unit={tempUnit}
+        onChange={handleTempChange}
+        disabled={isRunning}
+        onUnitToggle={onTempUnitToggle}
+      />
 
       <div className="pt-6 border-t border-gray-700 space-y-6">
         <h3 className="text-lg font-semibold text-white">Full Recipe Calculator</h3>

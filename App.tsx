@@ -7,16 +7,17 @@ import type { SimulationParams } from './types';
 
 const App: React.FC = () => {
   const [params, setParams] = useState<SimulationParams>({
-    idy: 0.5,
+    idy: 0.015,
     salt: 2.8,
     hydration: 63,
-    temperature: 24,
+    temperature: 28,
   });
   const [isRunning, setIsRunning] = useState(false);
   const [flourAmountKg, setFlourAmountKg] = useState(1); // Default to 1kg
   const [doughBallWeightGrams, setDoughBallWeightGrams] = useState(270);
   const [targetDoublingTime, setTargetDoublingTime] = useState<number | null>(null);
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
+  const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
 
   useEffect(() => {
     const hasSeenDisclaimer = localStorage.getItem('hasSeenDisclaimer');
@@ -36,6 +37,11 @@ const App: React.FC = () => {
     setTargetDoublingTime(null); // When user manually changes a param, revert to calculating time.
     const clampedValue = Math.max(0, value); // Ensure no negative values
     setParams(prev => ({ ...prev, [param]: clampedValue }));
+  };
+
+  const handleTempUnitToggle = () => {
+    if (isRunning) return;
+    setTempUnit(prev => (prev === 'C' ? 'F' : 'C'));
   };
 
   const handleFlourAmountChange = (newAmount: number) => {
@@ -135,6 +141,8 @@ const App: React.FC = () => {
             onFlourAmountChange={handleFlourAmountChange}
             doughBallWeightGrams={doughBallWeightGrams}
             onDoughBallWeightChange={handleDoughBallWeightChange}
+            tempUnit={tempUnit}
+            onTempUnitToggle={handleTempUnitToggle}
           />
         </div>
       </main>
