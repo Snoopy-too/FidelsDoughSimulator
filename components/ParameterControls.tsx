@@ -219,7 +219,7 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
               onBlur={handleFlourInputBlur}
               onKeyDown={handleFlourInputKeyDown}
               disabled={isRunning}
-              className="w-full p-2 bg-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full p-2 bg-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-right pr-2"
             />
             <span className="px-3 text-gray-400">kg</span>
           </div>
