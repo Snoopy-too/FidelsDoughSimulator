@@ -13,6 +13,7 @@ const App: React.FC = () => {
   });
   const [isRunning, setIsRunning] = useState(false);
   const [flourAmountKg, setFlourAmountKg] = useState(1); // Default to 1kg
+  const [doughBallWeightGrams, setDoughBallWeightGrams] = useState(270);
   const [targetDoublingTime, setTargetDoublingTime] = useState<number | null>(null);
 
   const availableSpeeds = [1, 5, 10, 25, 50, 100];
@@ -33,6 +34,12 @@ const App: React.FC = () => {
     // Clamp the value between 0.3 and 25 kg
     const clampedAmount = Math.max(0.3, Math.min(newAmount, 25));
     setFlourAmountKg(clampedAmount);
+  };
+
+  const handleDoughBallWeightChange = (newWeight: number) => {
+    if (isRunning) return;
+    const clampedWeight = Math.max(100, Math.min(newWeight, 500));
+    setDoughBallWeightGrams(clampedWeight);
   };
 
   const handleDoublingTimeChange = (newTimeInMinutes: number) => {
@@ -109,6 +116,8 @@ const App: React.FC = () => {
             isMaxSpeed={speedIndex === availableSpeeds.length - 1}
             flourAmountKg={flourAmountKg}
             onFlourAmountChange={handleFlourAmountChange}
+            doughBallWeightGrams={doughBallWeightGrams}
+            onDoughBallWeightChange={handleDoughBallWeightChange}
           />
         </div>
       </main>

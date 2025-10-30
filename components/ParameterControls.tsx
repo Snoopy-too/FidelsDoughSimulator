@@ -148,18 +148,26 @@ interface ParameterControlsProps {
   isMaxSpeed: boolean;
   flourAmountKg: number;
   onFlourAmountChange: (amount: number) => void;
+  doughBallWeightGrams: number;
+  onDoughBallWeightChange: (weight: number) => void;
 }
 
 export const ParameterControls: React.FC<ParameterControlsProps> = ({ 
   params, onParamChange, isRunning, isCollapsed, onToggleRun, onReset, 
   doublingTime, onDoublingTimeChange, simulationSpeed, onSpeedChange, 
-  isMinSpeed, isMaxSpeed, flourAmountKg, onFlourAmountChange 
+  isMinSpeed, isMaxSpeed, flourAmountKg, onFlourAmountChange,
+  doughBallWeightGrams, onDoughBallWeightChange
 }) => {
   const [flourInputValue, setFlourInputValue] = useState(flourAmountKg.toString());
+  const [ballWeightInputValue, setBallWeightInputValue] = useState(doughBallWeightGrams.toString());
 
   useEffect(() => {
     setFlourInputValue(flourAmountKg.toString());
   }, [flourAmountKg]);
+
+  useEffect(() => {
+    setBallWeightInputValue(doughBallWeightGrams.toString());
+  }, [doughBallWeightGrams]);
 
   const handleInputChange = (param: keyof SimulationParams) => (e: React.ChangeEvent<HTMLInputElement>) => {
     onParamChange(param, parseFloat(e.target.value));
@@ -185,11 +193,33 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
     }
   };
 
+  const handleBallWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBallWeightInputValue(e.target.value);
+  };
+
+  const handleBallWeightBlur = () => {
+    const parsedValue = parseInt(ballWeightInputValue, 10);
+    if (!isNaN(parsedValue)) {
+      onDoughBallWeightChange(parsedValue);
+    } else {
+      setBallWeightInputValue(doughBallWeightGrams.toString());
+    }
+  };
+  
+  const handleBallWeightKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBallWeightBlur();
+      e.currentTarget.blur();
+    }
+  };
+
 
   const flourGrams = flourAmountKg * 1000;
   const waterGrams = flourGrams * (params.hydration / 100);
   const saltGrams = flourGrams * (params.salt / 100);
   const idyGrams = flourGrams * (params.idy / 100);
+  const totalDoughWeight = flourGrams + waterGrams + saltGrams + idyGrams;
+  const doughBallYield = doughBallWeightGrams > 0 ? (totalDoughWeight / doughBallWeightGrams).toFixed(1) : '0.0';
 
 
   return (
@@ -206,22 +236,42 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
 
       <div className="pt-6 border-t border-gray-700 space-y-6">
         <h3 className="text-lg font-semibold text-white">Full Recipe Calculator</h3>
-        <div className="flex flex-col">
-          <label className="mb-2 text-sm font-medium text-gray-400">Flour Amount</label>
-          <div className="flex items-center bg-gray-800 border border-gray-700 rounded-md">
-            <input
-              type="number"
-              value={flourInputValue}
-              min={0.3}
-              max={25}
-              step={0.1}
-              onChange={handleFlourInputChange}
-              onBlur={handleFlourInputBlur}
-              onKeyDown={handleFlourInputKeyDown}
-              disabled={isRunning}
-              className="w-full p-2 bg-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-right pr-2"
-            />
-            <span className="px-3 text-gray-400">kg</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <label className="mb-2 text-sm font-medium text-gray-400">Flour Amount</label>
+            <div className="flex items-center bg-gray-800 border border-gray-700 rounded-md">
+              <input
+                type="number"
+                value={flourInputValue}
+                min={0.3}
+                max={25}
+                step={0.1}
+                onChange={handleFlourInputChange}
+                onBlur={handleFlourInputBlur}
+                onKeyDown={handleFlourInputKeyDown}
+                disabled={isRunning}
+                className="w-full p-2 bg-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-right pr-2"
+              />
+              <span className="px-3 text-gray-400">kg</span>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <label className="mb-2 text-sm font-medium text-gray-400">Dough Ball Weight</label>
+            <div className="flex items-center bg-gray-800 border border-gray-700 rounded-md">
+              <input
+                type="number"
+                value={ballWeightInputValue}
+                min="100"
+                max="500"
+                step="5"
+                onChange={handleBallWeightChange}
+                onBlur={handleBallWeightBlur}
+                onKeyDown={handleBallWeightKeyDown}
+                disabled={isRunning}
+                className="w-full p-2 bg-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-right pr-2"
+              />
+              <span className="px-3 text-gray-400">g</span>
+            </div>
           </div>
         </div>
 
@@ -237,6 +287,11 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
 
           <div className="font-medium text-gray-400">IDY:</div>
           <div className="font-mono text-right text-white">{idyGrams.toFixed(1)} g</div>
+        </div>
+        <div className="text-center p-3 bg-blue-900/50 rounded-lg border border-blue-700">
+          <p className="font-medium text-gray-300">
+            Yields <span className="font-bold text-xl text-blue-300">{doughBallYield}</span> doughballs at <span className="font-bold">{doughBallWeightGrams}g</span>
+          </p>
         </div>
       </div>
 
