@@ -1,0 +1,5 @@
+{
+  "name": "Neapolitan Pizza Dough Fermentation Simulator",
+  "description": "A web application that models how a ball of pizza dough ferments based on adjustable parameters like yeast, salt, hydration, and temperature. Visually simulates the dough's growth, tracks volume doublings, and shows when the dough might collapse from over-fermentation.",
+  "requestFramePermissions": []
+}
