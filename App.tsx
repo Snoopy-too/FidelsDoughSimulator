@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ParameterControls } from './components/ParameterControls';
 import { SimulationDisplay } from './components/SimulationDisplay';
+import { DisclaimerModal } from './components/DisclaimerModal';
 import { useDoughSimulation, calculateIdyFromDoublingTime } from './hooks/useDoughSimulation';
 import type { SimulationParams } from './types';
 
@@ -15,6 +16,14 @@ const App: React.FC = () => {
   const [flourAmountKg, setFlourAmountKg] = useState(1); // Default to 1kg
   const [doughBallWeightGrams, setDoughBallWeightGrams] = useState(270);
   const [targetDoublingTime, setTargetDoublingTime] = useState<number | null>(null);
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenDisclaimer = localStorage.getItem('hasSeenDisclaimer');
+    if (!hasSeenDisclaimer) {
+      setIsDisclaimerOpen(true);
+    }
+  }, []);
 
   const availableSpeeds = [1, 5, 10, 25, 50, 100];
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -80,8 +89,16 @@ const App: React.FC = () => {
     reset();
   };
 
+  const handleDisclaimerClose = () => {
+    localStorage.setItem('hasSeenDisclaimer', 'true');
+    setIsDisclaimerOpen(false);
+  };
+
+
   return (
     <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center">
+      <DisclaimerModal isOpen={isDisclaimerOpen} onClose={handleDisclaimerClose} />
+
       <header className="text-center mb-8">
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
           Neapolitan Pizza Dough Fermentation Simulator
